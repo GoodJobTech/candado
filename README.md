@@ -11,7 +11,7 @@
 
 ### Accessing a shared resource
 
-Imagine a scenario where you have a shared resource that you want to access. You want to ensure that only process can access the resource at a time. If the way you are accessing the does not provides a *strong read-after-write consistency*, then there is a chance that the resource will be modified by another process while you are reading it, so called *dirty reads*. To prevent this, you can use a *lock* to ensure that only one process can access the resource at a time.
+Imagine a scenario where you have a shared resource that you want to access. You want to ensure that only process can access the resource at a time. If the way you are accessing the does not provides a **strong read-after-write consistency**, then there is a chance that the resource will be modified by another process while you are reading it, so called **dirty reads**. To prevent this, you can use a **lock** to ensure that only one process can access the resource at a time.
 
 
 ```sh
@@ -25,7 +25,7 @@ Imagine a scenario where you have a shared resource that you want to access. You
 
 ## Architecture
 
-The current implementation relies on Redis since it prevents *dirty reads* with sub-millisecond latency as it is an in-memory database.
+The current implementation relies on Redis since it prevents **dirty reads** with sub-millisecond latency as it is an in-memory database.
 
 ## Deployment
 
