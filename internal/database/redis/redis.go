@@ -58,14 +58,16 @@ func (r *Redis) connect() error {
 }
 
 func (r *Redis) lock(ctx context.Context, id string) error {
-	switch r.client.SetNX(ctx, id, "1", 0).Err() {
-	case nil:
-		return nil
-	case redis.Nil:
-		return errors.ErrAlreadyLocked
-	default:
-		return nil
+	val, err := r.client.SetNX(ctx, id, "1", 0).Result()
+	if err != nil {
+		return err
 	}
+
+	if !val {
+		return errors.ErrAlreadyLocked
+	}
+
+	return nil
 }
 
 func (r *Redis) Lock(id string) error {
@@ -73,7 +75,16 @@ func (r *Redis) Lock(id string) error {
 }
 
 func (r *Redis) unlock(ctx context.Context, id string) error {
-	return r.client.Del(ctx, id).Err()
+	val, err := r.client.Del(ctx, id).Result()
+	if err != nil {
+		return err
+	}
+
+	if val == 0 {
+		return errors.ErrAlreadyUnlocked
+	}
+
+	return nil
 }
 
 func (r *Redis) Unlock(id string) error {

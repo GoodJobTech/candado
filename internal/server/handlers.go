@@ -9,23 +9,28 @@ import (
 )
 
 type Response struct {
-	Error   string `json:"error"`
-	State   int    `json:"state"`
-	Success bool   `json:"success"`
+	Error string `json:"error"`
+	Data  struct {
+		ID    string `json:"id"`
+		State int    `json:"state"`
+	} `json:"data"`
+	Success bool `json:"success"`
 }
 
 func (s *Server) AcquireHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
 	var response Response
+
+	vars := mux.Vars(r)
+	response.Data.ID = vars["id"]
 
 	err := s.db.Lock(vars["id"])
 	switch err {
 	case nil:
 		response.Success = true
-		response.State = 1
+		response.Data.State = 1
 	case errors.ErrAlreadyLocked:
 		response.Success = false
-		response.State = 1
+		response.Data.State = 1
 		response.Error = err.Error()
 	}
 
@@ -34,17 +39,19 @@ func (s *Server) AcquireHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) ReleaseHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
 	var response Response
+
+	vars := mux.Vars(r)
+	response.Data.ID = vars["id"]
 
 	err := s.db.Unlock(vars["id"])
 	switch err {
 	case nil:
 		response.Success = true
-		response.State = 0
+		response.Data.State = 0
 	case errors.ErrAlreadyUnlocked:
 		response.Success = false
-		response.State = 0
+		response.Data.State = 0
 		response.Error = err.Error()
 	}
 
@@ -53,17 +60,19 @@ func (s *Server) ReleaseHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) HeartbeatHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
 	var response Response
+
+	vars := mux.Vars(r)
+	response.Data.ID = vars["id"]
 
 	state, err := s.db.Heartbeat(vars["id"])
 	switch err {
 	case errors.ErrLockDoesntExists:
 		response.Success = false
-		response.State = 2
+		response.Data.State = 0
 		response.Error = err.Error()
 	case nil:
-		response.State = int(state)
+		response.Data.State = int(state)
 	}
 
 	js, _ := json.Marshal(response)
