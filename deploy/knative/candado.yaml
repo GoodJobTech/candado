@@ -1,0 +1,99 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: candado-redis-config
+  labels:
+    app: candado-redis-config
+data:
+  redis-config: "bind 0.0.0.0"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: candado-redis
+  labels:
+    app: candado-redis
+    component: redis
+spec:
+  selector:
+    matchLabels:
+      app: candado-redis
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: candado-redis
+    spec:
+      containers:
+        - name: master
+          image: redis:latest
+          command:
+            - redis-server
+            - "/redis-master/redis.conf"
+          resources:
+            limits:
+              cpu: "4"
+              memory: 4Gi
+            requests:
+              cpu: "1"
+              memory: 1Gi
+          ports:
+            - containerPort: 6379
+          env:
+            - name: REDIS_HOST
+              value: redis
+          volumeMounts:
+            - mountPath: /redis-master-data
+              name: data
+            - mountPath: /redis-master
+              name: config
+      volumes:
+        - name: data
+          emptyDir: {}
+        - name: config
+          configMap:
+            name: candado-redis-config
+            items:
+              - key: redis-config
+                path: redis.conf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: candado-redis
+  labels:
+    app: candado-redis
+    component: redis
+spec:
+  ports:
+    - port: 6379
+      targetPort: 6379
+  selector:
+    app: candado-redis
+---
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: candado
+  namespace: default
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/target: "1"
+    spec:
+      containers:
+        - name: candado
+          image: public.ecr.aws/j8j7i1o7/candado
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          env:
+            - name: CANDADO_SERVER_HOST
+              value: "localhost"
+            - name: CANDADO_SERVER_PORT
+              value: "8080"
+            - name: REDIS_HOST
+              value: candado-redis
+            - name: REDIS_PORT
+              value: "6379"
