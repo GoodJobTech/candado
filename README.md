@@ -11,7 +11,7 @@
 
 ### Accessing a shared resource
 
-Imagine a scenario where you have a shared resource that you want to access. You want to ensure that only process can access the resource at a time. If the way you are accessing the does not provides a **strong read-after-write consistency**, then there is a chance that the resource will be modified by another process while you are reading it, so called **dirty reads**. To prevent this, you can use a **lock** to ensure that only one process can access the resource at a time.
+Imagine a scenario where you have a shared resource that you want to access. You want to ensure that only process can access the resource at a time. If the way you are accessing a resource does not provides a **strong read-after-write consistency**, then there is a chance that the resource will be modified by another process while you are reading it, so called **dirty reads**. To prevent this, you can use a **lock** to ensure that only one process can access the resource at a time. 
 
 
 ```sh
@@ -20,7 +20,7 @@ Imagine a scenario where you have a shared resource that you want to access. You
 3. process 1: modify the resource 
 4. process 2: modify the resource
 5. process 1: write the modified resource
-5. process 2: write the modified resource
+6. process 2: write the modified resource
 ```
 
 ## Architecture
@@ -72,7 +72,10 @@ GET /acquire/{lock-id}
 ```json
 {
     "error": "",
-    "state": 1,
+    "data": {
+        "id": "lock-id",
+        "state": 1,
+    }
     "success": true
 }
 ```
@@ -91,7 +94,10 @@ GET /release/{lock-id}
 ```json
 {
     "error": "",
-    "state": 0,
+    "data": {
+        "id": "lock-id",
+        "state": 0,
+    }
     "success": true
 }
 ```
@@ -110,7 +116,10 @@ GET /heartbeat/{lock-id}
 ```json
 {
     "error": "",
-    "state": 0,
+    "data": {
+        "id": "lock-id",
+        "state": 1,
+    }
     "success": true
 }
 ```
