@@ -36,7 +36,7 @@ The current implementation relies on Redis since it prevents **dirty reads** wit
 ```sh
 git clone git@github.com:GoodJobTech/candado.git
 cd candado
-k apply -f deploy/knative/yaml
+kubectl apply -f deploy/knative/candado.yaml
 ```
 
 2. Wait for the deployment to be ready.
@@ -48,11 +48,23 @@ candado-00006-deployment-596558b4cf-wqsm8        2/2     Running   0          7s
 candado-redis-b9c5878dc-s5xmq                    1/1     Running   0          34m
 ```
 
-
-
 ### Kubernetes
 
+1. Download candado and apply the manifest to your cluster.
+
 ```sh
+git clone git@github.com:GoodJobTech/candado.git
+cd candado
+kubectl apply -f deploy/k8s/candado.yaml
+```
+
+2. Wait for the deployment to be ready.
+
+```sh
+$ kubectl get pods
+
+candado-00006-deployment-596558b4cf-wqsm8        2/2     Running   0          7s
+candado-redis-b9c5878dc-s5xmq                    1/1     Running   0          34m
 ```
 
 ## API
